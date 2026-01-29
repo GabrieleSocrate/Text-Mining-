@@ -1,4 +1,5 @@
 Dataset: articoli SEC https://www.kaggle.com/datasets/jamesglang/sec-edgar-company-facts-september2023/data
-Trovare dati S&P500 o altri benchmark utili a seconda delle aziende presenti nel dataset. Come utilizzare questi benchmark: 1) fare una media 2) utilizzarli singolarmente 3)etc
+Trovare dati S&P500 o altri benchmark utili a seconda delle aziende presenti nel dataset.
+Decidere come utilizzare questi benchmark: 1) fare una media 2) utilizzarli singolarmente 3)etc
 il modello riesce a capire quale azienda influenza il benchmark vedendo l'effetto del suo articolo sul benchmark.
 grafico finale: grafico a barre. X:nome tot aziende e Y numero di articoli che influenzano (in teoria dovrebbero essere le piu importanti).

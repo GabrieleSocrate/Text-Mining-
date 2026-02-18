@@ -91,3 +91,31 @@ df_finale = df_articoli[['Azienda', 'Tipo', 'Data', 'Ora', 'Articolo']]
 
 # Mostriamo il risultato finale
 print(df_finale)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. Impostazioni: scegli quale articolo e quante parole vuoi vedere
+indice_articolo = 0  # 0 è il primo articolo (Microsoft), 1 è il secondo, ecc.
+numero_parole = 1000  # Modifica questo numero con le parole che desideri
+
+# 2. Estraiamo il testo completo della riga scelta
+testo_completo = df_finale['Articolo'].iloc[indice_articolo]
+
+# 3. Dividiamo il testo in parole, prendiamo le prime 'X' e le riuniamo con uno spazio
+parole_estratte = ' '.join(testo_completo.split()[:numero_parole])
+
+# 4. Stampiamo il risultato
+print(f"\n--- Prime {numero_parole} parole dell'articolo {indice_articolo} ({df_finale['Azienda'].iloc[indice_articolo]} - {df_finale['Tipo'].iloc[indice_articolo]}) ---")
+print(parole_estratte)
+print("... [CONTINUA]")

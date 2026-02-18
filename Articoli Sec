@@ -1,0 +1,93 @@
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+import time
+
+# 1. Configurazione Aziende (Microsoft, Apple, Nvidia)
+aziende_cik = {
+    'Microsoft': '0000789019',
+    'Apple': '0000320193',
+    'Nvidia': '0001045810'
+}
+
+# IMPORTANTE: Inserisci una tua email reale, altrimenti la SEC bloccherà le richieste
+headers = {'User-Agent': 'TuoNome TuaEmail@esempio.com'} 
+
+# Lista per raccogliere i dataframe di ogni azienda
+lista_df = []
+
+print("Recupero degli indici SEC per le aziende...")
+
+# 2. Ciclo per scaricare i metadati di ogni singola azienda
+for nome_azienda, cik in aziende_cik.items():
+    url_submissions = f"https://data.sec.gov/submissions/CIK{cik.zfill(10)}.json"
+    
+    response = requests.get(url_submissions, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        filings = data['filings']['recent']
+        
+        # Creazione DataFrame temporaneo
+        df_temp = pd.DataFrame({
+            'Azienda': nome_azienda,
+            'CIK': cik,
+            'Data': filings['filingDate'],
+            'Ora': filings['acceptanceDateTime'],
+            'Tipo': filings['form'],
+            'Accession': filings['accessionNumber'],
+            'PrimaryDoc': filings['primaryDocument']
+        })
+        
+        # 3. Filtriamo 8-K, 10-K, 10-Q e teniamo SOLO I PRIMI 5 per questa azienda
+        df_filtrato = df_temp[df_temp['Tipo'].isin(['8-K', '10-K', '10-Q'])].head(5).copy()
+        lista_df.append(df_filtrato)
+        print(f"- Trovati i documenti per {nome_azienda}")
+    else:
+        print(f"Errore {response.status_code} per {nome_azienda}")
+    
+    # Pausa di cortesia tra una richiesta JSON e l'altra
+    time.sleep(0.2)
+
+# Uniamo tutti i risultati in un unico grande DataFrame (15 righe in totale)
+df_articoli = pd.concat(lista_df, ignore_index=True)
+
+# 4. Funzione per scaricare e pulire il testo
+def download_sec_text(cik, accession, primary_doc):
+    time.sleep(0.2) # Pausa obbligatoria per non sovraccaricare il server
+    
+    accession_clean = accession.replace('-', '')
+    cik_short = str(int(cik))
+    url_doc = f"https://www.sec.gov/Archives/edgar/data/{cik_short}/{accession_clean}/{primary_doc}"
+    
+    try:
+        res = requests.get(url_doc, headers=headers)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.content, 'html.parser')
+            
+            # Pulizia HTML e metadati XBRL
+            for tag in soup(["script", "style"]):
+                tag.decompose()
+            for ix_tag in soup.find_all(['ix:header', 'ix:hidden']):
+                ix_tag.decompose()
+            for hidden_tag in soup.find_all(style=lambda value: value and 'display:none' in value.replace(' ', '')):
+                hidden_tag.decompose()
+                
+            return soup.get_text(separator=' ', strip=True)
+        else:
+            return f"Errore HTTP {res.status_code}"
+    except Exception as e:
+        return f"Errore nel download: {e}"
+
+print("\nDownload e pulizia in corso dei 15 documenti testuali... (potrebbe volerci un po')")
+
+# 5. Applichiamo la funzione, passando il CIK specifico per ogni riga
+df_articoli['Articolo'] = df_articoli.apply(
+    lambda row: download_sec_text(row['CIK'], row['Accession'], row['PrimaryDoc']), axis=1
+)
+
+# 6. Pulizia finale della colonna Ora e rimozione colonne tecniche inutili
+df_articoli['Ora'] = pd.to_datetime(df_articoli['Ora']).dt.time
+df_finale = df_articoli[['Azienda', 'Tipo', 'Data', 'Ora', 'Articolo']]
+
+# Mostriamo il risultato finale
+print(df_finale)

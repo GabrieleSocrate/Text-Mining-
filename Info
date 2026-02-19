@@ -10,3 +10,5 @@ Hai 4 aziende:
 1) fai 4 database vettorialo specifici per azienda
 2) metti nomi delle quattro aziende in una lista, fai distanza vettoriale tra nome azienda e vettore query
 3) come contesto usa i vettori nel database vettoriale (tutti o alcuni tipo top 10) specifici dell'azienda la cui distanza vettoriale calcolate prima è minima
+
+https://www.sec.gov/edgar/search/#/dateRange=all&ciks=0000789019&entityName=MICROSOFT%2520CORP%2520(MSFT)%2520(CIK%25200000789019)&filter_ciks=0000789019&filter_entityName=MICROSOFT%2520CORP%2520%2520(MSFT)%2520%2520(CIK%25200000789019)&filter_forms=8-K

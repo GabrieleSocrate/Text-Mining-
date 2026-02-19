@@ -4,3 +4,9 @@ Decidere come utilizzare questi benchmark: 1) fare una media 2) utilizzarli sing
 il modello riesce a capire quale azienda influenza il benchmark vedendo l'effetto del suo articolo sul benchmark.
 Chatbox che da informazioni su un azienda basandosi su articoli SEC
 grafico finale: grafico a barre. X:nome tot aziende e Y numero di articoli che influenzano (in teoria dovrebbero essere le piu importanti).
+
+Idea per RAG
+Hai 4 aziende:
+1) fai 4 database vettorialo specifici per azienda
+2) metti nomi delle quattro aziende in una lista, fai distanza vettoriale tra nome azienda e vettore query
+3) come contesto usa i vettori nel database vettoriale (tutti o alcuni tipo top 10) specifici dell'azienda la cui distanza vettoriale calcolate prima è minima

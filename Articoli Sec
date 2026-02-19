@@ -1,121 +1,168 @@
-import requests
-import pandas as pd
-from bs4 import BeautifulSoup
-import time
+import re
 
-# 1. Configurazione Aziende (Microsoft, Apple, Nvidia)
-aziende_cik = {
-    'Microsoft': '0000789019',
-    'Apple': '0000320193',
-    'Nvidia': '0001045810'
-}
-
-# IMPORTANTE: Inserisci una tua email reale, altrimenti la SEC bloccherà le richieste
-headers = {'User-Agent': 'TuoNome TuaEmail@esempio.com'} 
-
-# Lista per raccogliere i dataframe di ogni azienda
-lista_df = []
-
-print("Recupero degli indici SEC per le aziende...")
-
-# 2. Ciclo per scaricare i metadati di ogni singola azienda
-for nome_azienda, cik in aziende_cik.items():
-    url_submissions = f"https://data.sec.gov/submissions/CIK{cik.zfill(10)}.json"
+def estrai_succo_8k(testo_grezzo):
+    """
+    Pulisce un Form 8-K rimuovendo il boilerplate (testata e firme)
+    e mantenendo l'inglese originale per il text mining.
+    """
+    # 1. Trova l'inizio della vera notizia (qualsiasi Item tra 1.00 e 8.99)
+    # Ignoriamo volutamente l'Item 9.01 che contiene solo la lista degli allegati
+    pattern_inizio = re.search(r'Item\s*[1-8]\.\d{2}[^\n]*', testo_grezzo, re.IGNORECASE)
     
-    response = requests.get(url_submissions, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        filings = data['filings']['recent']
+    # 2. Trova la fine della notizia (quando iniziano gli allegati o le firme)
+    pattern_fine = re.search(r'(Item\s*9\.01|SIGNATURE)', testo_grezzo, re.IGNORECASE)
+    
+    if pattern_inizio:
+        inizio = pattern_inizio.start()
+        # Se trova la fine taglia lì, altrimenti prende fino alla fine del testo
+        fine = pattern_fine.start() if pattern_fine else len(testo_grezzo)
         
-        # Creazione DataFrame temporaneo
-        df_temp = pd.DataFrame({
-            'Azienda': nome_azienda,
-            'CIK': cik,
-            'Data': filings['filingDate'],
-            'Ora': filings['acceptanceDateTime'],
-            'Tipo': filings['form'],
-            'Accession': filings['accessionNumber'],
-            'PrimaryDoc': filings['primaryDocument']
-        })
+        # Estraiamo il blocco pulito
+        testo_pulito = testo_grezzo[inizio:fine].strip()
         
-        # 3. Filtriamo 8-K, 10-K, 10-Q e teniamo SOLO I PRIMI 5 per questa azienda
-        df_filtrato = df_temp[df_temp['Tipo'].isin(['8-K', '10-K', '10-Q'])].head(5).copy()
-        lista_df.append(df_filtrato)
-        print(f"- Trovati i documenti per {nome_azienda}")
-    else:
-        print(f"Errore {response.status_code} per {nome_azienda}")
-    
-    # Pausa di cortesia tra una richiesta JSON e l'altra
-    time.sleep(0.2)
+        # Pulizia estetica opzionale: rimuove spazi vuoti multipli
+        testo_pulito = re.sub(r'\s+', ' ', testo_pulito)
+        return testo_pulito
+        
+    return testo_grezzo # Restituisce il testo intero se non trova i pattern
 
-# Uniamo tutti i risultati in un unico grande DataFrame (15 righe in totale)
-df_articoli = pd.concat(lista_df, ignore_index=True)
+# --- TEST SUL TUO ARTICOLO ---
+articolo_grezzo = """
+SECURITIES AND EXCHANGE COMMISSION
 
-# 4. Funzione per scaricare e pulire il testo
-def download_sec_text(cik, accession, primary_doc):
-    time.sleep(0.2) # Pausa obbligatoria per non sovraccaricare il server
-    
-    accession_clean = accession.replace('-', '')
-    cik_short = str(int(cik))
-    url_doc = f"https://www.sec.gov/Archives/edgar/data/{cik_short}/{accession_clean}/{primary_doc}"
-    
-    try:
-        res = requests.get(url_doc, headers=headers)
-        if res.status_code == 200:
-            soup = BeautifulSoup(res.content, 'html.parser')
-            
-            # Pulizia HTML e metadati XBRL
-            for tag in soup(["script", "style"]):
-                tag.decompose()
-            for ix_tag in soup.find_all(['ix:header', 'ix:hidden']):
-                ix_tag.decompose()
-            for hidden_tag in soup.find_all(style=lambda value: value and 'display:none' in value.replace(' ', '')):
-                hidden_tag.decompose()
-                
-            return soup.get_text(separator=' ', strip=True)
-        else:
-            return f"Errore HTTP {res.status_code}"
-    except Exception as e:
-        return f"Errore nel download: {e}"
+WASHINGTON, D.C. 20549
 
-print("\nDownload e pulizia in corso dei 15 documenti testuali... (potrebbe volerci un po')")
+ 
 
-# 5. Applichiamo la funzione, passando il CIK specifico per ogni riga
-df_articoli['Articolo'] = df_articoli.apply(
-    lambda row: download_sec_text(row['CIK'], row['Accession'], row['PrimaryDoc']), axis=1
-)
+ 
+FORM 8-K
 
-# 6. Pulizia finale della colonna Ora e rimozione colonne tecniche inutili
-df_articoli['Ora'] = pd.to_datetime(df_articoli['Ora']).dt.time
-df_finale = df_articoli[['Azienda', 'Tipo', 'Data', 'Ora', 'Articolo']]
+ 
 
-# Mostriamo il risultato finale
-print(df_finale)
+ 
+CURRENT REPORT
 
+PURSUANT TO SECTION 13 OR 15(D)
 
+OF THE SECURITIES EXCHANGE ACT OF 1934
 
+Date of Report (Date of earliest event reported) July 1, 2025
 
+ 
 
+ 
+Microsoft Corporation
 
+ 
 
+ 
+ 
 
+Washington	 	001-37845	 	91-1144442
+(State or Other Jurisdiction
 
+of Incorporation)
 
+ 	
+(Commission
 
+File Number)
 
+ 	
+(IRS Employer
 
+Identification No.)
 
-# 1. Impostazioni: scegli quale articolo e quante parole vuoi vedere
-indice_articolo = 0  # 0 è il primo articolo (Microsoft), 1 è il secondo, ecc.
-numero_parole = 1000  # Modifica questo numero con le parole che desideri
+ 
 
-# 2. Estraiamo il testo completo della riga scelta
-testo_completo = df_finale['Articolo'].iloc[indice_articolo]
+One Microsoft Way, Redmond, Washington	 	98052-6399
+(425) 882-8080
 
-# 3. Dividiamo il testo in parole, prendiamo le prime 'X' e le riuniamo con uno spazio
-parole_estratte = ' '.join(testo_completo.split()[:numero_parole])
+www.microsoft.com/investor
 
-# 4. Stampiamo il risultato
-print(f"\n--- Prime {numero_parole} parole dell'articolo {indice_articolo} ({df_finale['Azienda'].iloc[indice_articolo]} - {df_finale['Tipo'].iloc[indice_articolo]}) ---")
-print(parole_estratte)
-print("... [CONTINUA]")
+ 
+
+ 
+Check the appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any of the following provisions (see General Instruction A.2. below):
+
+ 
+
+☐	
+Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+ 
+
+☐	
+Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+ 
+
+☐	
+Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+ 
+
+☐	
+Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant to Section 12(b) of the Act:
+
+ 
+
+Title of each class
+
+ 	
+Trading
+
+Symbol
+
+ 	
+Name of exchange
+
+on which registered
+
+Common stock, $0.00000625 par value per share	 	MSFT	 	NASDAQ
+3.125% Notes due 2028	 	MSFT	 	NASDAQ
+2.625% Notes due 2033	 	MSFT	 	NASDAQ
+Indicate by check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§230.405 of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§240.12b-2 of this chapter). Emerging growth company ☐
+
+If an emerging growth company, indicate by check mark if the registrant has elected not to use the extended transition period for complying with any new or revised financial accounting standards provided pursuant to Section 13(a) of the Exchange Act. ☐
+
+ 
+
+ 
+ 
+Item 5.03. Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year.
+
+The Board of Directors of Microsoft Corporation (the “Company”) amended the Company’s Bylaws, effective July 1, 2025. The amendments implement a cure process for certain deficiencies in director nomination notices submitted by shareholders. For nomination notices received by the Company within the time period specified in the Bylaws, the Company will notify shareholders of such deficiencies in the notice and there will be an opportunity to cure such deficiencies.
+
+The foregoing summary of the amendments to the Company’s Bylaws is qualified in its entirety by reference to the text of the Bylaws, a copy of which is filed as Exhibit 3.2 to this Current Report on Form 8-K and is incorporated herein by reference.
+
+Item 9.01. Financial Statements and Exhibits
+
+(d) Exhibits:
+
+ 
+
+3.2	  	Bylaws of Microsoft Corporation
+104	  	Cover Page Interactive Data File (embedded within the Inline XBRL document)
+ 
+
+SIGNATURE
+
+Pursuant to the requirements of the Securities Exchange Act of 1934, the registrant has duly caused this report to be signed on its behalf by the undersigned hereunto duly authorized.
+
+ 
+
+ 	 	 	 	 	 	MICROSOFT CORPORATION
+Date: July 1, 2025	 		 		 	
+/s/ Keith R. Dolliver
+
+ 		 		 	Keith R. Dolliver
+ 	 	 	 	 	 	Corporate Secretary
+"""
+
+testo_nlp = estrai_succo_8k(articolo_grezzo)
+
+print("=== TESTO ESTRATTO PER IL MODELLO NLP ===")
+print(len(testo_nlp))

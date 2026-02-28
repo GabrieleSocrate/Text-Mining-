@@ -9,3 +9,9 @@ Hai 4 aziende:
 A chart with input val acc e vall os e show the value for each epoch usando i grafici con la barretta che puoi socrrere nel tempo
 
 Data visualization:
+
+1. Grafico temporale interattivo con barre giornaliere stacked (positivo/negativo/neutro), slider in basso per scorrere il tempo e tooltip on-hover con i conteggi precisi.
+2. Grafico radar a 7 assi (una emozione per asse) dove la forma cambia in base ai livelli di emotion, con possibilità di confrontare più aziende e menu di selezione aziende con ricerca.
+3. Strumento di filtri per categorie (es. azienda, autore, news_outlet, ecc.) che mostra il numero di articoli positivi/negativi/neutri in base alle categorie scelte.
+4. Grafico di rete a punti (network) che collega aziende co-men-zionate nello stesso articolo, con connessioni più forti per co-occorrenze più frequenti.
+5. Ranking (classifiche) filtrabili, ad esempio top aziende per numero di articoli, per sentiment medio, per variazione nel tempo, o per emozione dominante.

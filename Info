@@ -1,5 +1,10 @@
 Dataset: articoli SEC https://github.com/felixdrinkall/financial-news-dataset
 
+1/03-8/03:
+LSTA e Bert
+9/03-12/03:
+Data visualizatin e Rag
+
 Idea per RAG
 Hai 4 aziende:
 1) fai 4 database vettorialo specifici per azienda

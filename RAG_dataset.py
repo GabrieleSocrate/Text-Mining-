@@ -42,7 +42,9 @@ chunks = splitter.split_documents(documents)
 # ----------------------------
 # EMBEDDINGS (LOCAL)
 # ----------------------------
-embeddings = HuggingFaceEmbeddings(model_name=EMB_MODEL)
+embeddings = HuggingFaceEmbeddings(
+    model_name=EMB_MODEL,
+    model_kwargs={"device": "cuda"})
 
 # ----------------------------
 # FAISS (LOCAL CACHE)

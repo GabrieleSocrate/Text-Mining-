@@ -60,7 +60,7 @@ else:
     vector_store = FAISS.from_documents(chunks, embeddings)
     vector_store.save_local(INDEX_DIR)
 
-retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 6})
+retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 20})
 
 # ----------------------------
 # LLM (LOCAL via OLLAMA)

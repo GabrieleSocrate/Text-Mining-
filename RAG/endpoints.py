@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from RAG_dataset import rag_answer
+from RAG import rag_answer
 router = APIRouter() # here there are all the endpoints. It acts as a container where routes are registered and later attached to the main FastAPI app.
 
 @router.get("/query/") 

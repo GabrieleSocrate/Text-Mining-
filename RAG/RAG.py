@@ -1,82 +1,101 @@
 import os
 import pandas as pd
+import numpy as np
+import faiss
+from typing import List, Dict
+from sentence_transformers import SentenceTransformer
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
-
 from langchain_ollama import ChatOllama
-from langchain_core.messages import SystemMessage, HumanMessage
 
-
-# ----------------------------
-# CONFIG
-# ----------------------------
-CSV_PATH = "dataset_RAG.csv"
-TEXT_COL = "description"              # <-- metti qui la colonna giusta
-INDEX_DIR = "faiss_index_dataset"     # cartella indice
-
-# Modello embeddings (gratis, locale)
-EMB_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-
-# Modello LLM locale via Ollama
+# ---------------------------
+# Configurations
+# ---------------------------
+CSV_PATH   = "dataset_RAG.csv"
+INDEX_PATH = "faiss_index.bin"
+DOCS_PATH  = "faiss_docs.npy"
+EMB_MODEL    = "sentence-transformers/all-MiniLM-L6-v2"
 OLLAMA_MODEL = "llama3.1:8b"
-
+TOP_K = 20
 
 # ----------------------------
-# LOAD DATASET
+# LOAD & CHUNK DATASET
 # ----------------------------
 df = pd.read_csv(CSV_PATH)
-texts = df[TEXT_COL].dropna().astype(str).tolist()
+texts = df.dropna().astype(str).values.flatten().tolist() # In this way we have a list of all documents 
 
 documents = [
     Document(page_content=t, metadata={"row_id": i})
     for i, t in enumerate(texts)
 ]
 
-# Chunking (consigliato se i testi sono lunghi)
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 chunks = splitter.split_documents(documents)
+chunk_texts = [c.page_content for c in chunks]
 
 # ----------------------------
-# EMBEDDINGS (LOCAL)
+# EMBEDDINGS
 # ----------------------------
-embeddings = HuggingFaceEmbeddings(
-    model_name=EMB_MODEL,
-    model_kwargs={"device": "cuda"})
+embedding_model = SentenceTransformer(EMB_MODEL, device="cuda")
+embedding_dim   = embedding_model.get_sentence_embedding_dimension()
 
 # ----------------------------
-# FAISS (LOCAL CACHE)
+# FAISS (Create or Load Document Embeddings)
 # ----------------------------
-# Se cambi EMB_MODEL o chunk params, elimina INDEX_DIR e rigenera.
-if os.path.exists(INDEX_DIR):
-    vector_store = FAISS.load_local(
-        INDEX_DIR,
-        embeddings,
-        allow_dangerous_deserialization=True
-    )
+if os.path.exists(INDEX_PATH) and os.path.exists(DOCS_PATH):
+    index = faiss.read_index(INDEX_PATH)
+    chunk_texts_arr = np.load(DOCS_PATH, allow_pickle=True).tolist()
 else:
-    vector_store = FAISS.from_documents(chunks, embeddings)
-    vector_store.save_local(INDEX_DIR)
+    doc_embeddings = embedding_model.encode(chunk_texts)
+    doc_embeddings = np.array(doc_embeddings, dtype="float32")
+    faiss.normalize_L2(doc_embeddings)
 
-retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 20})
+    index = faiss.IndexFlatL2(embedding_dim)
+    index.add(doc_embeddings)
+
+    faiss.write_index(index, INDEX_PATH)
+    np.save(DOCS_PATH, np.array(chunk_texts, dtype=object))
+    chunk_texts_arr = chunk_texts
 
 # ----------------------------
-# LLM (LOCAL via OLLAMA)
+# LLM
 # ----------------------------
 llm = ChatOllama(model=OLLAMA_MODEL, temperature=0)
 
-async def rag_answer(question: str) -> str:
-    docs = retriever.invoke(question)
-    context = "\n\n---\n\n".join(d.page_content for d in docs)
+# ----------------------------
+# RETRIEVAL FUNCTION
+# ----------------------------
+def retrieve_documents(question, k = TOP_K):
+    query_emb = np.array(embedding_model.encode([question]), dtype="float32")
+    faiss.normalize_L2(query_emb)
 
-    messages = [
-        SystemMessage(content=(
-            "You are a helpful assistant. Answer ONLY using the provided context. "
-            "If the answer is not in the context, say you don't know."
-        )),
-        HumanMessage(content=f"Question:\n{question}\n\nContext:\n{context}")
+    distances, indices = index.search(query_emb, k)
+    similarities = 1 - distances[0]
+
+    return [
+        {"text": chunk_texts_arr[idx], "score": float(score)}
+        for idx, score in zip(indices[0], similarities)
     ]
 
-    return llm.invoke(messages).content
+# ----------------------------
+# Building the Augmented Prompt
+# ----------------------------
+def create_augmented_prompt(question, retrieved_docs):
+    context = "\n\n---\n\n".join(doc["text"] for doc in retrieved_docs)
+
+    return (
+        f"Context:\n{context}\n\n"
+        f"Question: {question}\n\n"
+        "Answer ONLY based on the context. "
+        "If the answer is not in the context, say you don't know.\n\n"
+        "Answer:"
+    )
+
+# ----------------------------
+# Rag function
+# ----------------------------
+async def rag_answer(question):
+    retrieved_docs   = retrieve_documents(question)
+    augmented_prompt = create_augmented_prompt(question, retrieved_docs)
+    return (await llm.ainvoke(augmented_prompt)).content

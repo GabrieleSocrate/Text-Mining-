@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 import faiss
-from typing import List, Dict
 from sentence_transformers import SentenceTransformer
 
 from langchain_core.documents import Document

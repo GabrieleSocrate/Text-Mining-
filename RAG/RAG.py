@@ -94,7 +94,7 @@ def create_augmented_prompt(question, retrieved_docs):
 # ----------------------------
 # Rag function
 # ----------------------------
-async def rag_answer(question):
+def rag_answer(question):
     retrieved_docs   = retrieve_documents(question)
     augmented_prompt = create_augmented_prompt(question, retrieved_docs)
-    return (await llm.ainvoke(augmented_prompt)).content
+    return (llm.invoke(augmented_prompt)).content

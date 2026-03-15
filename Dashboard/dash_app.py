@@ -4,7 +4,7 @@ Financial News Sentiment Classification App
 Requirements:
     pip install transformers dash dash-bootstrap-components torch tensorflow keras numpy
 """
-
+import json
 import numpy as np
 import torch
 import torch.nn as nn
@@ -12,6 +12,8 @@ from transformers import (
     DistilBertTokenizer, DistilBertForSequenceClassification, DistilBertConfig,
     BertTokenizer, BertForSequenceClassification, BertConfig
 )
+from transformers import logging as hf_logging
+hf_logging.set_verbosity_error()
 import dash
 from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
@@ -22,12 +24,21 @@ import dash_bootstrap_components as dbc
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # risale a Text Mining\
-
+"""
 DISTILBERT_WEIGHTS = os.path.join(BASE_DIR, "Bert_weights", "bert_checkpoints_256token", "bert_best_model_256token.pt")
 FINBERT_WEIGHTS    = os.path.join(BASE_DIR, "Bert_weights", "bert_checkpoints_256token", "finbert_best_model_256token.pt")
 BERT_WEIGHTS       = os.path.join(BASE_DIR, "Bert_weights", "bert_checkpoints_256token", "bert_base_best_model_256token.pt")
-# BILSTM_WEIGHTS     = "path/to/best_final_model.keras"   # aggiorna con il tuo path
+"""
+BILSTM_WEIGHTS     = os.path.join(BASE_DIR, "TextMiningProject", "best_final_model.keras") # aggiorna con il tuo path
+BILSTM_WORD_INDEX  = os.path.join(BASE_DIR, "TextMiningProject", "tokenizer.json")
+BILSTM_CONFIG    =  os.path.join(BASE_DIR, "TextMiningProject", "config.json")
+DISTILBERT_WEIGHTS = os.path.join(BASE_DIR, "TextMiningProject", "bert_best_model_256token.pt")
+FINBERT_WEIGHTS    = os.path.join(BASE_DIR, "TextMiningProject", "finbert_best_model_256token.pt")
+BERT_WEIGHTS       = os.path.join(BASE_DIR, "TextMiningProject", "bert_base_best_model_256token.pt")
 
+
+
+BILSTM_MAXLEN = 98
 MAX_LEN    = 256
 DEVICE     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LABEL_MAP  = {0: "🟢 Positive", 1: "🔴 Negative", 2: "⚪ Neutral"}
@@ -70,20 +81,24 @@ def load_bert_base():
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
     return model, tokenizer
 
-"""
+
 def load_bilstm():
-    try:
-        from tensorflow.keras.models import load_model
-        from tensorflow.keras.preprocessing.sequence import pad_sequences
-        import pickle
-        model = load_model(BILSTM_WEIGHTS)
-        # carica tokenizer Keras se disponibile
-        with open("path/to/tokenizer.pkl", "rb") as f:
-            tokenizer = pickle.load(f)
-        return model, tokenizer
-    except Exception as e:
-        return None, str(e)
-"""
+    
+    from tensorflow.keras.models import load_model
+    from tensorflow.keras.preprocessing.text import tokenizer_from_json
+        
+    model = load_model(BILSTM_WEIGHTS)
+        
+    with open(BILSTM_WORD_INDEX, "r", encoding="utf-8") as f:
+        tokenizer = tokenizer_from_json(f.read())
+    #tokenizer = Tokenizer(num_words=len(word_index) + 1, oov_token="<OOV>")
+    #tokenizer.word_index = word_index
+    #tokenizer.index_word = {v: k for k, v in word_index.items()}
+    with open(BILSTM_CONFIG, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+    max_seq_len = int(cfg["MAX_SEQUENCE_LEN"])
+    return model, tokenizer , max_seq_len   #,tokenizer   delete word_index if tokenizer is active
+    
 
 # ─────────────────────────────────────────────
 # FUNZIONI DI PREDIZIONE
@@ -101,15 +116,23 @@ def predict_transformer(text, model, tokenizer):
     probs     = torch.softmax(outputs.logits, dim=1).cpu().numpy()[0]
     label_idx = int(np.argmax(probs))
     return label_idx, probs
-"""
-def predict_bilstm(text, model, tokenizer):
-    from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+def predict_bilstm(text, model,tokenizer,max_seq_len): #swap word_index with tokenizer
+    """from tensorflow.keras.preprocessing.sequence import pad_sequences
     seq = tokenizer.texts_to_sequences([text])
-    seq = pad_sequences(seq, maxlen=MAX_LEN, padding="post", truncating="post")
+    seq = pad_sequences(seq, maxlen=BILSTM_MAXLEN, padding="post", truncating="post")
     probs     = model.predict(seq)[0]
     label_idx = int(np.argmax(probs))
+    return label_idx, probs"""
+    from tensorflow.keras.preprocessing.sequence import pad_sequences
+ 
+    seq = tokenizer.texts_to_sequences([text])
+    seq = pad_sequences(seq, maxlen=max_seq_len, padding="post", truncating="post")
+ 
+    probs     = model.predict(seq, verbose=0)[0]
+    label_idx = int(np.argmax(probs))
     return label_idx, probs
-"""
+
 # ─────────────────────────────────────────────
 # LAYOUT APP
 # ─────────────────────────────────────────────
@@ -238,11 +261,10 @@ def classify(n_clicks, text, model_name):
             model, tokenizer = load_bert_base()
             label_idx, probs = predict_transformer(text, model, tokenizer)
         
-        #elif model_name == "bilstm":
-         #   model, tokenizer = load_bilstm()
-          #  if model is None:
-           #     return dbc.Alert(f"❌ BiLSTM model not loaded: {tokenizer}", color="danger")
-            #label_idx, probs = predict_bilstm(text, model, tokenizer)
+        elif model_name == "bilstm":
+            model, tokenizer , seq_len= load_bilstm()
+           
+            label_idx, probs = predict_bilstm(text, model, tokenizer, seq_len)
         
         else:
             return dbc.Alert("Unknown model selected.", color="danger")

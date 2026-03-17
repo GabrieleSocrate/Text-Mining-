@@ -158,3 +158,10 @@ Each file corresponds to a specific section of the dashboard:
 - Matteo Giuseppetti
 - Gabriele Socrate
 - Gabriele Trentin
+
+## Contributors
+
+The following contributors have participated in the development of this project:
+
+- @MatteoGiuseppetti
+- @altro-username

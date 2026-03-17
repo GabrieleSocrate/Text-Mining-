@@ -1,5 +1,19 @@
 # Text-Mining- Financial News Sentiment Analysis
-[Go to Setup](#setup-instructions)
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Setup Instructions](#setup-instructions)
+- [1. Data Loading and Cleaning](#1-data-loading-and-cleaning)
+- [2. BiLSTM](#2-bilstm)
+- [3. Bert Models](#3-bert-models)
+- [4. RAG](#4-rag)
+- [5. Interactive Dashboard](#5-interactive-dashboard)
+  - [Running the Dashboard](#running-the-dashboard)
+  - [Dashboard Structure](#dashboard-structure-after-full-execution)
+  - [File Description](#file-description)
+- [Contributors](#contributors)
+
 ## Project Overview
 The goal of this project is to perform sentiment analysis on real financial news from 2018 to 2023, scraped from Yahoo Finance. Several neural network models were implemented to classify each news in one of the three plausible labels: "Positive", "Negative" or "Neutral".
 
@@ -18,18 +32,23 @@ The project was developed using:
 Before running any script or notebook, make sure to navigate to the **root directory** of the project.
 
 ### Dependency Installation
-All required libraries are listed in the `requirements.txt` file. Install them by running the following command from the project root directory:
+All required libraries are listed in the [`requirements.txt`](requirements.txt) file. Install them by running the following command from the project root directory:
 
 ```bash
 pip install -r requirements.txt
 ```
 
 ## 1. Data Loading and Cleaning
+
+See notebook: [`1.Dataset_loading_cleaning.ipynb`](1.Dataset_loading_cleaning.ipynb)
+
 - loading the data
-- ensuring the dataset is free of missing values and other inconsistencies, keeping only relevant columns
-- Preparation and generation of the datasets used in the dashboard
+- ensuring the dataset is free of missing values and other inconsistencies
+- preparation and generation of the datasets used in the dashboard
 
 ## 2. BiLSTM
+
+See notebook: [`2.BiLSTM.ipynb`](2.BiLSTM.ipynb)
 
 - BiLSTM with GloVe embeddings: bidirectional LSTM architecture for sentiment classification of financial news, using pre-trained GloVe embeddings to capture semantic relationships between words.
 
@@ -42,6 +61,9 @@ pip install -r requirements.txt
 - saving model artifacts: storing checkpoints, grid search results, and evaluation outputs to allow reuse without retraining and to enable dashboard integration.
   
 ## 3. Bert Models
+
+See notebook: [`3.Bert_Models.ipynb`](3.Bert_Models.ipynb)
+
 ### DistilBert fine-tuning: 
 - transformers model which was pretrained by knowledge distillation using BERT as foundational model.
 
@@ -52,6 +74,8 @@ pip install -r requirements.txt
 - transformers model pretrained on generic data, considered a foundational model for sequence classification, token classification or question answering tasks.
 
 ## 4. RAG
+
+See script: [`RAG/RAG.py`](RAG/RAG.py)
 
 - loading and splitting the dataset into small text chunks.
 
@@ -116,36 +140,36 @@ dashboard/
 ### File Description
 
 #### Main Application
-- **app.py**  
+- [`app.py`](Dashboard/app/app.py)  
   Entry point of the dashboard application. It initializes and runs the interface.
 
 #### Pages (`app/pages/`)
 Each file corresponds to a specific section of the dashboard:
 
-- **homepage.py**  
+- [`homepage.py`](Dashboard/app/pages/homepage.py)   
   Main landing page of the dashboard.
 
-- **eda.py**  
+- [`eda.py`](Dashboard/app/pages/eda.py)  
   Contains the Exploratory Data Analysis visualizations.
 
-- **company_analysis.py**  
+- [`company_analysis.py`](Dashboard/app/pages/company_analysis.py)    
   Provides sentiment-based analysis at the company level.
 
-- **sentiment_model.py**  
+- [`sentiment_models.py`](Dashboard/app/pages/sentiment_models.py)  
   Displays model performance metrics and comparisons (BiLSTM and BERT models).
 
-- **rag.py**  
+- [`rag.py`](Dashboard/app/pages/rag.py)  
   Implements the Retrieval-Augmented Generation (RAG) interface.
 
 #### Utilities (`app/utils/`)
-- **data_loader.py**  
+- [`data_loader.py`](Dashboard/app/utils/data_loader.py)
   Handles data loading and preprocessing for the dashboard.
 
 #### Data (`data/dashboard/`)
-- **balanced_dataset.csv**  
+- [`balanced_dataset.csv`](Dashboard/data/dashboard/balanced_dataset.csv)  
   Balanced dataset used for visualization and analysis.
 
-- **full_dataset.csv**  
+- [`full_dataset.csv`](Dashboard/data/dashboard/full_dataset.csv)
   Complete dataset used for exploratory analysis.
 
 ### Notes

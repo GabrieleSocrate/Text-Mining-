@@ -8,6 +8,7 @@ The structure of the repository is as follows:
 ## 1. Data Loading and Cleaning
 - loading the data
 - ensuring the dataset is free of missing values and other inconsistencies, keeping only relevant columns
+- Preparation and generation of the datasets used in the dashboard
 
 ## 2. BiLSTM
 

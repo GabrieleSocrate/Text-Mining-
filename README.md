@@ -3,6 +3,29 @@
 ## Project Overview
 The goal of this project is to perform sentiment analysis on real financial news from 2018 to 2023, scraped from Yahoo Finance. Several neural network models were implemented to classify each news in one of the three plausible labels: "Positive", "Negative" or "Neutral".
 
+## Setup Instructions
+
+## Instructions
+
+To ensure the correct execution of all project components and to avoid potential errors during setup and runtime, please follow the steps below carefully.
+
+### Environment Setup
+It is recommended to create and activate a virtual environment before installing the project dependencies. This helps maintain an isolated and consistent Python environment.
+
+The project was developed using:
+
+- **Python 3.11.7** (or a compatible **Python 3.11.x** version)
+
+### Working Directory
+Before running any script or notebook, make sure to navigate to the **root directory** of the project.
+
+### Dependency Installation
+All required libraries are listed in the `requirements.txt` file. Install them by running the following command from the project root directory:
+
+```bash
+pip install -r requirements.txt
+```
+
 The structure of the repository is as follows:
 
 ## 1. Data Loading and Cleaning

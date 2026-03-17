@@ -1,5 +1,5 @@
 # Text-Mining- Financial News Sentiment Analysis
-
+#setup-instructions
 ## Project Overview
 The goal of this project is to perform sentiment analysis on real financial news from 2018 to 2023, scraped from Yahoo Finance. Several neural network models were implemented to classify each news in one of the three plausible labels: "Positive", "Negative" or "Neutral".
 

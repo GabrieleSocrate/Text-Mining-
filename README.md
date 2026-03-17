@@ -23,7 +23,7 @@ The structure of the repository is as follows:
 
 ### 4. RAG
 
-- loading and spliting the dataset into small text chunks.
+- loading and splitting the dataset into small text chunks.
 
 - creating embeddings and storing them in a FAISS index for efficient similarity-based retrieval of relevant context.
 

@@ -191,6 +191,7 @@ However, depending on the available hardware resources (especially GPU memory), 
 If the default model cannot be executed due to hardware limitations, simply:
 * comment out the `llama3.1:8b` model
 * uncomment the `qwen2:1.5b` model
+
 The `qwen2:1.5b` model requires fewer computational resources and can be used on systems with limited GPU capacity.
 
 

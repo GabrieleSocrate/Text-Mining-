@@ -178,6 +178,20 @@ Each file corresponds to a specific section of the dashboard:
 - Ensure that all project scripts have been executed before launching the dashboard.  
 - Verify that all required files are correctly positioned in their respective directories.  
 - Missing files may result in incomplete visualizations or runtime errors.
+- The RAG component is configured to use the following default model:
+```python
+OLLAMA_MODEL = "llama3.1:8b"
+````
+However, depending on the available hardware resources (especially GPU memory), this model may be too large to run. For this reason, a smaller alternative model has been included in the RAG script ([`RAG.py`](RAG/RAG.py)). Inside the file, you will find the following commented line:
+```python
+# OLLAMA_MODEL = "qwen2:1.5b"
+```
+If the default model cannot be executed due to hardware limitations, simply:
+* comment out the `llama3.1:8b` model
+* uncomment the `qwen2:1.5b` model
+The `qwen2:1.5b` model requires fewer computational resources and can be used on systems with limited GPU capacity.
+
+
 
 ## Contributors
 - Lorenzo Galli

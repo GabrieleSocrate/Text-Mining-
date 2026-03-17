@@ -50,6 +50,8 @@ See notebook: [`1.Dataset_loading_cleaning.ipynb`](1.Dataset_loading_cleaning.ip
 
 See notebook: [`2.BiLSTM.ipynb`](2.BiLSTM.ipynb)
 
+- Exploratory Data Analysis
+
 - BiLSTM with GloVe embeddings: bidirectional LSTM architecture for sentiment classification of financial news, using pre-trained GloVe embeddings to capture semantic relationships between words.
 
 - data preprocessing and balancing: cleaning the dataset, balancing sentiment classes, tokenizing text, and applying sequence padding.

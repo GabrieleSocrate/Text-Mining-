@@ -23,4 +23,10 @@ The structure of the repository is as follows:
 
 ### 4. RAG
 
+- loading and spliting the dataset into small text chunks.
+
+- creating embeddings and storing them in a FAISS index for efficient similarity-based retrieval of relevant context.
+
+- implementing a question-answering system that retrieves top-k relevant chunks, builds an augmented prompt, and asks a local LLM (via Ollama) to generate context-grounded answers.
+
 ### 5. Interactive Dashboard

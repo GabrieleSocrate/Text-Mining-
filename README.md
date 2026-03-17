@@ -24,8 +24,6 @@ All required libraries are listed in the `requirements.txt` file. Install them b
 pip install -r requirements.txt
 ```
 
-The structure of the repository is as follows:
-
 ## 1. Data Loading and Cleaning
 - loading the data
 - ensuring the dataset is free of missing values and other inconsistencies, keeping only relevant columns
@@ -155,3 +153,8 @@ Each file corresponds to a specific section of the dashboard:
 - Verify that all required files are correctly positioned in their respective directories.  
 - Missing files may result in incomplete visualizations or runtime errors.
 
+## Contributors
+- Lorenzo Galli
+- Matteo Giuseppetti
+- Gabriele Socrate
+- Gabriele Trentin

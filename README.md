@@ -178,7 +178,9 @@ Each file corresponds to a specific section of the dashboard:
 - Ensure that all project scripts have been executed before launching the dashboard.  
 - Verify that all required files are correctly positioned in their respective directories.  
 - Missing files may result in incomplete visualizations or runtime errors.
-- The RAG component is configured to use the following default model:
+
+### Attention
+The RAG component is configured to use the following default model:
 ```python
 OLLAMA_MODEL = "llama3.1:8b"
 ````

@@ -5,8 +5,6 @@ The goal of this project is to perform sentiment analysis on real financial news
 
 ## Setup Instructions
 
-## Instructions
-
 To ensure the correct execution of all project components and to avoid potential errors during setup and runtime, please follow the steps below carefully.
 
 ### Environment Setup

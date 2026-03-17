@@ -44,7 +44,7 @@ See notebook: [`1.Dataset_loading_cleaning.ipynb`](1.Dataset_loading_cleaning.ip
 
 - loading the data
 - ensuring the dataset is free of missing values and other inconsistencies
-- preparation and generation of the datasets used in the dashboard
+- Preparation and generation of the two CSV datasets used by the dashboard
 
 ## 2. BiLSTM
 

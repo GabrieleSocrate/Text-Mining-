@@ -70,7 +70,7 @@ python dashboard/app/app.py
 ### Dashboard Structure (After Full Execution)
 
 Below is the structure of the `dashboard/` folder after running the full project:
-...
+```text
 dashboard/
 │
 ├── app/
@@ -92,7 +92,7 @@ dashboard/
 │       └── full_dataset.csv
 │
 └── .gitignore
-...
+```
 ### File Description
 
 #### Main Application

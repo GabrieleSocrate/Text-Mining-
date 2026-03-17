@@ -42,7 +42,7 @@ pip install -r requirements.txt
 
 See notebook: [`1.Dataset_loading_cleaning.ipynb`](1.Dataset_loading_cleaning.ipynb)
 
-- loading the data
+- loading the data from https://github.com/felixdrinkall/financial-news-dataset
 - ensuring the dataset is free of missing values and other inconsistencies
 - Preparation and generation of the two CSV datasets used by the dashboard
 

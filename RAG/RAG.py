@@ -15,9 +15,8 @@ CSV_PATH   = "dataset_RAG.csv"
 INDEX_PATH = "faiss_index.bin"
 DOCS_PATH  = "faiss_docs.npy"
 EMB_MODEL    = "sentence-transformers/all-MiniLM-L6-v2"
-#OLLAMA_MODEL = "llama3.1:8b"
-#OLLAMA_MODEL = "phi3:mini"
-OLLAMA_MODEL = "qwen2:1.5b"
+OLLAMA_MODEL = "llama3.1:8b"
+# OLLAMA_MODEL = "qwen2:1.5b"
 TOP_K = 20
 
 # ----------------------------

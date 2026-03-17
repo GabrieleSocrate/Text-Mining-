@@ -12,7 +12,7 @@ It is recommended to create and activate a virtual environment before installing
 
 The project was developed using:
 
-- **Python 3.11.7** (or a compatible **Python 3.11.x** version)
+- **Python 3.11.7** 
 
 ### Working Directory
 Before running any script or notebook, make sure to navigate to the **root directory** of the project.

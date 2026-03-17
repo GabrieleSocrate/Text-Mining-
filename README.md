@@ -9,23 +9,18 @@ The structure of the repository is as follows:
 - loading the data
 - ensuring the dataset is free of missing values and other inconsistencies, keeping only relevant columns
 
-3. BiLSTM Model
-BiLSTM with GloVe embeddings:
-bidirectional LSTM architecture for sentiment classification of financial news, using pre-trained GloVe embeddings to capture semantic relationships between words.
+### 2. BiLSTM
 
-data preprocessing and balancing:
-cleaning the dataset, balancing sentiment classes, tokenizing text, and applying sequence padding.
+- BiLSTM with GloVe embeddings: bidirectional LSTM architecture for sentiment classification of financial news, using pre-trained GloVe embeddings to capture semantic relationships between words.
 
-hyperparameter tuning:
-performing grid search to identify the optimal model configuration.
+- data preprocessing and balancing: cleaning the dataset, balancing sentiment classes, tokenizing text, and applying sequence padding.
 
-model training and evaluation:
-training the BiLSTM model on the processed dataset and evaluating its performance on the test set.
+- hyperparameter tuning: performing grid search to identify the optimal model configuration.
 
-saving model artifacts:
-storing checkpoints, grid search results, and evaluation outputs to allow reuse without retraining and to enable dashboard integration.
+- model training and evaluation: training the BiLSTM model on the processed dataset and evaluating its performance on the test set.
+
+- saving model artifacts: storing checkpoints, grid search results, and evaluation outputs to allow reuse without retraining and to enable dashboard integration.
   
-
 ### 3. Bert Models
 #### DistilBert fine-tuning: 
 - transformers model which was pretrained by knowledge distillation using BERT as foundational model.
